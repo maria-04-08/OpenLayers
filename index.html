@@ -14,29 +14,29 @@
 			//arcgis动态图层服务地址
 // 			var url = 'https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/' +
 // 			'Specialty/ESRI_StateCityHighway_USA/MapServer'; 
-			var url = 'http://10.155.5.30/ArcGIS/rest/services/hainancitys/MapServer';
-			// var url = 'http://10.155.5.30/ArcGIS/rest/services/bg/MapServer';
-			//创建动态图层
-			
-			var danymicLayer = new ol.layer.Image({
-			  source: new ol.source.ImageArcGISRest({
-				ratio: 1,
-				params: {},
-				url: url
-			  })
-			})
-			//初始化地图
-			var map = new ol.Map({
-				target: 'map',
-				view: new ol.View({
-					center: [-111111111118, 110],
-				  zoom: 4
-				})
-			  });
-			map.addLayer(danymicLayer);
+////			var url = 'http://10.155.5.30/ArcGIS/rest/services/hainancitys/MapServer';
+//			// var url = 'http://10.155.5.30/ArcGIS/rest/services/bg/MapServer';
+//			//创建动态图层
+//			
+//			var danymicLayer = new ol.layer.Image({
+//			  source: new ol.source.ImageArcGISRest({
+//				ratio: 1,
+//				params: {},
+//				url: url
+//			  })
+//			})
+//			//初始化地图
+//			var map = new ol.Map({
+//				target: 'map',
+//				view: new ol.View({
+//					center: [-10997148, 4569099],
+//				  zoom: 4
+//				})
+//			  });
+//			map.addLayer(danymicLayer);
 
-
-// 		  // 创建地图
+		
+   		  // 创建地图
 // 		  new ol.Map({
 // 				// 设置地图图层
 // 				layers: [
@@ -51,6 +51,23 @@
 // 				// 让id为map的div作为地图的容器
 // 				target: 'map'    
 // 			});
+var center = ol.proj.transform([104.06667, 30.66667], 'EPSG:4326', 'EPSG:3857');
+		var gaodeMapLayer = new ol.layer.Tile({
+        source: new ol.source.XYZ({
+            url:'http://webrd03.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8'//高德地图在线
+        }),
+        projection: 'EPSG:3857'
+    })
+	    //			//初始化地图
+			var map = new ol.Map({
+				target: 'map',
+				view: new ol.View({
+					center: center,
+				  zoom: 4
+				})
+			  });
+			map.addLayer(gaodeMapLayer);
+
 		</script>
 	</body>
 </html>
