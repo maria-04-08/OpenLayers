@@ -51,22 +51,150 @@
 // 				// 让id为map的div作为地图的容器
 // 				target: 'map'    
 // 			});
-var center = ol.proj.transform([104.06667, 30.66667], 'EPSG:4326', 'EPSG:3857');
-		var gaodeMapLayer = new ol.layer.Tile({
-        source: new ol.source.XYZ({
-            url:'http://webrd03.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8'//高德地图在线
-        }),
-        projection: 'EPSG:3857'
-    })
-	    //			//初始化地图
+	var center = ol.proj.transform([108.37, 18.10], 'EPSG:4326', 'EPSG:3857');
+	// 		var gaodeMapLayer = new ol.layer.Tile({
+	//         source: new ol.source.XYZ({
+	//             url:'http://webrd03.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8'//高德地图在线
+	//         }),
+	//         projection: 'EPSG:3857'
+	//     })
+
+			var arcgisTileLayer = new ol.layer.Tile({
+				source: new ol.source.TileArcGISRest({
+					url: 'http://10.155.5.30/ArcGIS/rest/services/hainancitys/MapServer'
+				}),
+				// source:new ol.source.OSM(),				
+				style: new ol.style.Style({
+					stroke: new ol.style.Stroke({
+						color: '#ff1824',
+						width: '100%'
+					}),
+					fill: new ol.style.Fill({
+						color: '#ccc'
+					}),
+					text: new ol.style.Text({
+						font: '12px 微软雅黑,sans-serif',
+						fill: new ol.style.Fill({
+							color: '#4c76cc'
+						}),
+						placement:'point',
+						backgroundStroke:new ol.style.Stroke({
+							color:'#feff2a',
+							width:1
+						}),
+						backgroundFill:new ol.style.Fill({
+							color:'#feff2a'
+						}),
+						text:"测试"
+					})
+
+				})
+			})
+// 			//初始化地图
+			var layer2 = new ol.layer.Vector({
+				source: new ol.source.Vector(),
+				// 注意：把feature上的style，直接移到layer上，避免直接在feature上设置style
+				style: new ol.style.Style({
+// 					image: new ol.style.Circle({
+// 						radius: 8,
+// 						fill: new ol.style.Fill({
+// 							color: 'red'
+// 						})
+// 					})
+					stroke: new ol.style.Stroke({
+                        color: '#ff1824',
+                        width: 2
+                    }),
+                    fill: new ol.style.Fill({
+                        color: 'rgba(255,0,0,1)'
+                    }),
+                    text: new ol.style.Text({
+                        font: '12px 微软雅黑,sans-serif',
+                        fill: new ol.style.Fill({
+                            color: '#4c76cc'
+                        }),
+                        placement:'point',
+                        backgroundStroke:new ol.style.Stroke({
+                            color:'#feff2a',
+                            width:1
+                        }),
+                        backgroundFill:new ol.style.Fill({
+                            color:'#feff2a'
+                        }),
+                        text:"测试"
+                    })
+
+				})
+			});
 			var map = new ol.Map({
+				layers: [
+					layer2
+				],
 				target: 'map',
 				view: new ol.View({
 					center: center,
-				  zoom: 4
+					zoom: 8,
 				})
-			  });
-			map.addLayer(gaodeMapLayer);
+			});
+			var map = new ol.Map({
+				layers: [
+					// 底图用Open Street Map 地图
+					new ol.layer.Tile({
+						source: new ol.source.OSM()
+					}),
+					// 再加载一个geojson的矢量地图
+					new ol.layer.Vector({
+						source: new ol.source.Vector({
+							url: '../data/geojson/line-samples.geojson',     // 地图来源
+							format: new ol.format.GeoJSON()    // 解析矢量地图的格式化类
+						})
+					})
+				],
+				view: new ol.View({ 
+					center: [-72.980624870461128, 48.161307640513321],
+					zoom: 8,
+					projection: 'EPSG:4326'
+				}),
+				target: 'map'
+			});
+// 			
+			map.addInteraction(new ol.interaction.Select({
+				condition: ol.events.condition.pointerMove,     // 唯一的不同之处，设置鼠标移到feature上就选取
+				style: new ol.style.Style({
+					image: new ol.style.Circle({
+						radius: 10,
+						fill: new ol.style.Fill({
+							color: 'blue'
+						})
+					})
+				})
+			}));
+		
+// 	
+			// 在地图上添加一个圆
+			var circle2 = new ol.Feature({
+				geometry: new ol.geom.Point(ol.proj.transform(
+					  [108.37, 18.10], 'EPSG:4326', 'EPSG:3857'))
+			})
+			// 此处不再为feature设置style
+			layer2.getSource().addFeature(circle2);
+
+			// 添加一个用于选择Feature的交互方式
+			map.addInteraction(new ol.interaction.Select({
+				// 设置选中后的style
+				style: new ol.style.Style({
+					image: new ol.style.Circle({
+						radius: 10,
+						fill: new ol.style.Fill({
+							color: 'blue'
+						})
+					})
+				})
+			}));			
+			
+			
+			map.addLayer(arcgisTileLayer);
+			
 
 		</script>
 	</body>
