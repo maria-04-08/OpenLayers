@@ -148,11 +148,12 @@
 
 		  if (sketch) {
 			var geom = sketch.getGeometry();
-			if (geom instanceof Polygon) {
-			  helpMsg = continuePolygonMsg;
-			} else if (geom instanceof LineString) {
-			  helpMsg = continueLineMsg;
-			}
+			helpMsg = continueLineMsg;
+// 			if (geom instanceof Polygon) {
+// 			  helpMsg = continuePolygonMsg;
+// 			} else if (geom instanceof LineString) {
+// 			  helpMsg = continueLineMsg;
+// 			}
 		  }
 
 		  helpTooltipElement.innerHTML = helpMsg;
@@ -261,13 +262,15 @@
 			  listener = sketch.getGeometry().on('change', function(evt) {
 				var geom = evt.target;
 				var output;
-				if (geom instanceof Polygon) {
-				  output = formatArea(geom);
-				  tooltipCoord = geom.getInteriorPoint().getCoordinates();
-				} else if (geom instanceof LineString) {
-				  output = formatLength(geom);
-				  tooltipCoord = geom.getLastCoordinate();
-				}
+				output = formatLength(geom);
+				tooltipCoord = geom.getLastCoordinate();
+// 				if (geom instanceof Polygon) {
+// 				  output = formatArea(geom);
+// 				  tooltipCoord = geom.getInteriorPoint().getCoordinates();
+// 				} else if (geom instanceof LineString) {
+// 				  output = formatLength(geom);
+// 				  tooltipCoord = geom.getLastCoordinate();
+// 				}
 				measureTooltipElement.innerHTML = output;
 				measureTooltip.setPosition(tooltipCoord);
 			  });
