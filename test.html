@@ -60,6 +60,9 @@
 		background:#fff;
 		cursor: pointer;
 	}
+	.toolbar span.span-active{
+		background:#fff;
+	}
 	#map {
 		width: 100%;
 		height: 100%;
@@ -187,13 +190,14 @@
 		<div id="info"></div>
 		<div class="toolbar">
 			<!-- 默认点选 -->
-			<span class='draw-line'>绘制</span><span class="measure-line">测距</span><span class="draw-grid">网格</span><span class="draw-logo">标志</span><span>弹窗</span><span class="clear">清除</span>
+			<span class='draw-line'>绘制</span><span class="measure-line">测距</span><span class="draw-grid">网格</span><span class="draw-logo">标志</span><span class="draw-pop">弹窗</span><span class="clear">清除</span>
 		</div>
 		<div id="scalebar"></div>
 		<script>
 			//全局变量
 			var linerSource = '', lineLayer = '', lineDraw = '', measureSource = '', measureLayer = '', measureDraw = '',
-				helpMsg = '',continueLineMsg = '',helpTooltipElement, measureTooltipElement, graticuleLayer = '', layerLogo = '';
+				helpMsg = '',continueLineMsg = '',helpTooltipElement, measureTooltipElement, graticuleLayer = '', layerLogo = '',
+				star1 = '', star2 = '', star3 = '', star4 = '', star5 = '', star6 = '', star7 = '', overlay = '';
 			//-----------------------------------点选部分开始--------------------------------------------
 			var style = new ol.style.Style({
 			  fill: new ol.style.Fill({
@@ -757,10 +761,10 @@
 			
 		function drawLogo(){
 			// 添加一个五星
-			var star = new ol.Feature({
+			star1 = new ol.Feature({
 				geometry: new ol.geom.Point([104.06, 30.67])
 			  });
-			  star.setStyle(new ol.style.Style({
+			  star1.setStyle(new ol.style.Style({
 				image: new ol.style.RegularShape({
 				  points: 5,    // 顶点个数
 				  radius1: 20, // 外圈大小
@@ -775,9 +779,9 @@
 				})
 			  }));
 			
-			  layer_logo.getSource().addFeature(star);
+			  layer_logo.getSource().addFeature(star1);
 			  
-			  var star2 = new ol.Feature({
+			  star2 = new ol.Feature({
 			  	geometry: new ol.geom.Point([116, 39])
 			    });
 			    star2.setStyle(new ol.style.Style({
@@ -796,7 +800,7 @@
 			    }));
 				layer_logo.getSource().addFeature(star2);
 				
-				var star3 = new ol.Feature({
+				star3 = new ol.Feature({
 					geometry: new ol.geom.Point([91, 29])
 				  });
 				  star3.setStyle(new ol.style.Style({
@@ -815,7 +819,7 @@
 				  }));
 				  layer_logo.getSource().addFeature(star3);
 				  
-				  var star4 = new ol.Feature({
+				  star4 = new ol.Feature({
 				  	geometry: new ol.geom.Point([120, 30])
 				    });
 				    star4.setStyle(new ol.style.Style({
@@ -834,7 +838,7 @@
 				    }));
 				    layer_logo.getSource().addFeature(star4);
 					
-					var star5 = new ol.Feature({
+					star5 = new ol.Feature({
 						geometry: new ol.geom.Point([110, 20])
 					  });
 					  star5.setStyle(new ol.style.Style({
@@ -853,7 +857,7 @@
 					  }));
 					  layer_logo.getSource().addFeature(star5);
 					  
-					  var star6 = new ol.Feature({
+					  star6 = new ol.Feature({
 					  	geometry: new ol.geom.Point([87, 43])
 					    });
 					    star6.setStyle(new ol.style.Style({
@@ -872,7 +876,7 @@
 					    }));
 					    layer_logo.getSource().addFeature(star6);
 						
-						var star7 = new ol.Feature({
+						star7 = new ol.Feature({
 							geometry: new ol.geom.Point([123, 50])
 						  });
 						  star7.setStyle(new ol.style.Style({
@@ -893,21 +897,79 @@
 		}
 
 		//------------------------------------图标标注结束------------------------------------
+		
+		//------------------------------------展示弹窗开始------------------------------------
+		function drawPop(){
+			let container = document.getElementById('popup');
+			let content = document.getElementById('popup-content');
+			let closer = document.getElementById('popup-closer'); 
+			// 要素信息框
+			overlay = new ol.Overlay({
+			    element: document.getElementById('popup'),
+			    autoPan: true,
+			    autoPanAnimation: {
+			        duration: 250
+			    }
+			});
+			map.on('click', function (evt) {
+			    var pixel = map.getEventPixel(evt.originalEvent);
+			    var feature = map.forEachFeatureAtPixel(pixel, function (feature, layer) {
+			        return feature;
+			    });
+			    var coordinate = evt.coordinate;
+			    var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
+			        coordinate, 'EPSG:3857', 'EPSG:4326'));
+			    if (feature !== undefined) {
+			        content.innerHTML = '<p>你点击的坐标是：</p><code>' + hdms + '</code><p>这里属于：' + feature.get('name') + '</p>';
+			    }
+			    else {
+			        content.innerHTML = '<p>你点击的坐标是：</p><code>' + hdms + '</code><p>这里是大海！</p>';
+			    }
+			    if(overlay){
+			    	overlay.setPosition(coordinate);
+			    	map.addOverlay(overlay);
+			    }
+			});
+			
+			/** 
+			 * 隐藏弹出框的函数 
+			 */
+			closer.onclick = function () {
+			    overlay.setPosition(undefined);
+			    closer.blur();
+			    return false;
+			};
+			
+		}
+		//------------------------------------展示弹窗结束------------------------------------
 		//清除所有要素
 		$('.clear').click(function(){
 			removeAllFeatures('all');
 		})
 		$('.draw-line').click(function(){
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
 			drawLine();
 		})
 		$('.measure-line').click(function(){
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
 			measure();
 		})
 		$('.draw-grid').click(function(){
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
 			drawGrid();
 		})
 		$('.draw-logo').click(function(){
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
 			drawLogo();
+		})
+		$('.draw-pop').click(function(){
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
+			drawPop();
 		})
 		//清除元素
         function removeAllFeatures(type) {
@@ -950,14 +1012,24 @@
 // 				});
 // 				graticuleLayer.setMap(map);
 				var test = graticuleLayer.getMap();
-				console.log(test.targetSize);
+//				console.log(test.targetSize);
 			}
-			if(layer_logo){
-				map.removeLayer(layer_logo);
+			if(star1){
+				layer_logo.getSource().removeFeature(star1); 
+				layer_logo.getSource().removeFeature(star2); 
+				layer_logo.getSource().removeFeature(star3); 
+				layer_logo.getSource().removeFeature(star4); 
+				layer_logo.getSource().removeFeature(star5); 
+				layer_logo.getSource().removeFeature(star6); 
+				layer_logo.getSource().removeFeature(star7); 
+			}
+			if(overlay){
+//				map.removeOverlay(overlay);
+				overlay = '';
 			}
         }
 		
-		</script>
+	</script>
 		<!-- <script src="./js/map-utils.js" type="text/javascript"></script> -->
 	</body>
 </html>
