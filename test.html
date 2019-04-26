@@ -317,6 +317,7 @@
 			//------------------------------------点选部分结束--------------------------------------------
 			
 			//------------------------------------画线部分开始------------------------------------
+			var status = false;
 			function drawLine(){
 				// 添加一个绘制的线使用的layer
 				linerSource = new ol.source.Vector();
@@ -350,7 +351,7 @@
 					}),
 					// maxPoints: 4    // 限制不超过4个点
 				});
-				var status = false;
+				
 				// 监听线绘制结束事件，获取坐标
 				lineDraw.on('drawend', function(e){
 					console.log('绘制完成 -----------');
@@ -374,7 +375,7 @@
 				    var coordinate = e.coordinate;
 				    var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
 				        coordinate, 'EPSG:3857', 'EPSG:4326'));
-				    if (feature !== undefined) {
+				    if (feature !== undefined && status) {
 				        feature.setStyle(new ol.style.Style({
 				         stroke: new ol.style.Stroke({
 				        	color: 'blue',
@@ -1070,12 +1071,14 @@
 			removeAllFeatures('all');
 		})
 		$('.draw-line').click(function(){
+			status = false;
 			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawLine();
 		})
 		$('.measure-line').click(function(){
+			status = false;
 			hiddenFeature = true;
 			$('#menu').css('display','block');
 			$(this).siblings().removeClass('span-active');
@@ -1083,18 +1086,21 @@
 			measure();
 		})
 		$('.draw-grid').click(function(){
+			status = false;
 			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawGrid();
 		})
 		$('.draw-logo').click(function(){
+			status = false;
 			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawLogo();
 		})
 		$('.draw-poly').click(function(){
+			status = false;
 			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
@@ -1102,6 +1108,7 @@
 			map.addLayer(earthquakeCluster);
 		})
 		$('.draw-pop').click(function(){
+			status = false;
 			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
