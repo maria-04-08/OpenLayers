@@ -75,6 +75,7 @@
 		bottom: 50px;
 		right: 30px;
 		z-index: 2000;
+		display: none;
 	}
 		 
 	.checkbox {
@@ -171,6 +172,17 @@
 	.ol-popup-closer:after {
 	  content: "✖";
 	}
+	#wangluo{
+		width:100%;
+		height:100%;
+		position:fixed;
+		left:0px;
+		top:0px;
+	}
+	#wangluo span{
+		display: inline-block;
+		width:8%;
+	}
 	</style>
 	<body>
 		<div id="map" class="map">
@@ -180,7 +192,7 @@
 					<option value="length">长度</option>
 					<option value="area">面积</option>
 				</select>
-				<label class="checkbox label"><input type="checkbox" id="geodesic" />使用大地测量</label>
+				<label class="checkbox label" style="display: none;"><input type="checkbox" id="geodesic" />使用大地测量</label>
 			</div>
 			<div id="popup" class="ol-popup">
 			  <a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -190,15 +202,17 @@
 		<div id="info"></div>
 		<div class="toolbar">
 			<!-- 默认点选 -->
-			<span class='draw-line'>绘制</span><span class="measure-line">测距</span><span class="draw-grid">网格</span><span class="draw-logo">标志</span><span class="draw-pop">弹窗</span><span class="clear">清除</span>
+			<span class='draw-line'>绘面</span><span class="measure-line">测距</span><span class="draw-logo">标志</span><span class="draw-pop">弹窗</span>
+			<span class="draw-poly">聚合点</span><span class="draw-grid">网格</span><span class="clear">清除</span>
 		</div>
 		<div id="scalebar"></div>
 		<script>
 			//全局变量
 			var linerSource = '', lineLayer = '', lineDraw = '', measureSource = '', measureLayer = '', measureDraw = '',
 				helpMsg = '',continueLineMsg = '',helpTooltipElement, measureTooltipElement, graticuleLayer = '', layerLogo = '',
-				star1 = '', star2 = '', star3 = '', star4 = '', star5 = '', star6 = '', star7 = '', overlay = '';
+				star1 = '', star2 = '', star3 = '', star4 = '', star5 = '', star6 = '', star7 = '', overlay = '', earthquakeCluster = null, hiddenFeature = false;
 			//-----------------------------------点选部分开始--------------------------------------------
+			
 			var style = new ol.style.Style({
 			  fill: new ol.style.Fill({
 			    color: 'rgba(255, 255, 255, 0.6)'
@@ -245,6 +259,7 @@
 				})
 			});
 			
+			
 			var featureOverlay = new ol.layer.Vector({
 			  source: new ol.source.Vector(),
 			  map: map,
@@ -261,7 +276,9 @@
 			
 			var highlight;
 			var displayFeatureInfo = function(pixel) {
-			
+			if(hiddenFeature){
+				return;
+			}
 			var feature = map.forEachFeatureAtPixel(pixel, function(feature) {
 				return feature;
 			});
@@ -424,7 +441,7 @@
 				//创建一个测量提示信息对象
 				var measureTooltip;
 				//继续绘制多边形的提示信息
-				var continuePolygonMsg = 'Click to continue drawing the polygon';
+				var continuePolygonMsg = '点击继续';
 				//继续绘制线段的提示信息
 				continueLineMsg = '点击继续画线';
 						 
@@ -939,37 +956,132 @@
 			    closer.blur();
 			    return false;
 			};
-			
 		}
 		//------------------------------------展示弹窗结束------------------------------------
+		//------------------------------------聚合点开始--------------------------------------
+		function drawPoly(){
+			// 初始化聚集要素的半径
+			// 可自由定义要素半径的计算规则
+			let maxFeatureCount;
+			// let earthquakeCluster = null;
+			let calculateClusterInfo = (resolution) => {
+			    maxFeatureCount = 0;
+			    let features = earthquakeCluster.getSource().getFeatures();
+			    let feature, radius;
+			    for (let i = features.length - 1; i >= 0; i--) {
+			        feature = features[i];
+			        let originalFeatures = feature.get('features');
+			        let extent = ol.extent.createEmpty();
+			        let j = (void 0), jj = (void 0);
+			        for (let j = 0, jj = originalFeatures.length; j<jj; ++j) {
+			            ol.extent.extend(extent, originalFeatures[j].getGeometry().getExtent());
+			        }
+			        maxFeatureCount = Math.max(maxFeatureCount, jj);
+			        radius = 0.15 * (ol.extent.getWidth(extent) + ol.extent.getHeight(extent)) / resolution;
+			        feature.set('radius', radius);
+			    }
+			}
+			
+			// 样式函数，对每个feature返回一个样式
+			let currentResolution;
+			let styleFunction = (feature, resolution) => {
+			    if (resolution != currentResolution) {
+			        calculateClusterInfo(resolution);
+			        currentResolution = resolution;
+			    }
+			    let style;
+			    let size = feature.get('features').length;
+			    if (size > 1) {
+			        style = new ol.style.Style({
+			            image: new ol.style.Circle({
+			                radius: feature.get('radius'),
+			                fill: new ol.style.Fill({
+			                    color: [255, 153, 0]
+			                })
+			            }),
+			            text: new ol.style.Text({
+			                text: size.toString(),
+			                fill: new ol.style.Fill({
+			                    color: '#fff'
+			                }),
+			                stroke: new ol.style.Stroke({
+			                    color: 'rgba(0, 0, 0, 0.6)',
+			                    width: 3
+			                })
+			            })
+			        })
+			    } else {
+			        // 每个地震点的默认样式
+			        style = new ol.style.Style({
+			            image: new ol.style.Circle({
+			                radius: 3,
+			                fill: new ol.style.Fill({
+			                    color: 'rgb(255, 0, 0)'
+			                })
+			            })
+			        });
+			    }
+			    return style;
+			}
+			
+			// 聚类图层
+			earthquakeCluster = new ol.layer.Vector({
+			    source: new ol.source.Cluster({
+			        distance: 80,   // 聚类阈值，当两点间距离小于20，便聚类为一个点
+			        source: new ol.source.Vector({
+			            format: new ol.format.GeoJSON(),
+			            url: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'
+			        })
+			    }),
+			    style: styleFunction
+			});
+		}
+		//------------------------------------聚合点结束--------------------------------------
 		//清除所有要素
 		$('.clear').click(function(){
+			hiddenFeature = false;
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
 			removeAllFeatures('all');
 		})
 		$('.draw-line').click(function(){
+			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawLine();
 		})
 		$('.measure-line').click(function(){
+			hiddenFeature = true;
+			$('#menu').css('display','block');
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			measure();
 		})
 		$('.draw-grid').click(function(){
+			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawGrid();
 		})
 		$('.draw-logo').click(function(){
+			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawLogo();
 		})
+		$('.draw-poly').click(function(){
+			hiddenFeature = true;
+			$(this).siblings().removeClass('span-active');
+			$(this).addClass('span-active');
+			drawPoly();
+			map.addLayer(earthquakeCluster);
+		})
 		$('.draw-pop').click(function(){
+			hiddenFeature = true;
 			$(this).siblings().removeClass('span-active');
 			$(this).addClass('span-active');
 			drawPop();
+			
 		})
 		//清除元素
         function removeAllFeatures(type) {
@@ -980,6 +1092,7 @@
 				map.removeInteraction(lineDraw);
 			}
 			if(measureSource){
+				$('#menu').css('display','none');
 				measureSource.clear();
 				map.removeLayer(measureLayer);
 				map.removeInteraction(measureDraw);
@@ -992,6 +1105,7 @@
 				}
 			}
 			if(graticuleLayer){
+				window.location.reload();
 // 				graticuleLayer = new ol.Graticule({
 // 					strokeStyle: new ol.style.Stroke({
 // 						color: 'rgba(12, 12, 12, 0)',
@@ -1022,10 +1136,14 @@
 				layer_logo.getSource().removeFeature(star5); 
 				layer_logo.getSource().removeFeature(star6); 
 				layer_logo.getSource().removeFeature(star7); 
+				star1 = star2 = star3 = star4 = star5 = star6 = star7 = '';
 			}
 			if(overlay){
 //				map.removeOverlay(overlay);
 				overlay = '';
+			}
+			if(earthquakeCluster){
+				map.removeLayer(earthquakeCluster);
 			}
         }
 		
