@@ -16,25 +16,23 @@
 	  }),
 	  text: new ol.style.Text({})
 	});
-
 	var raster = new ol.layer.Tile({
-		source: new ol.source.OSM()
-	});
-
-	var vector = new ol.layer.Vector({
-	  source: new ol.source.Vector({
-		url: './china_diaoyudao.json',
-		format: new ol.format.GeoJSON()
-	  })
+		source: new ol.source.OSM()  //初始化地图
+	}); 
+	var vector = new ol.layer.Vector({  //地图矢量数据
+		source: new ol.source.Vector({
+			url: './china_diaoyudao.json',
+			format: new ol.format.GeoJSON()
+		})
 	});
 
 	var select = new ol.interaction.Select();
 
 	var translate = new ol.interaction.Translate({
-	  features: select.getFeatures()
+		features: select.getFeatures()
 	});
 
-	var layer_logo = new ol.layer.Vector({ //五角星展示
+	var layer_logo = new ol.layer.Vector({ //五角星标注展示
 		source: new ol.source.Vector()
 	});
 
@@ -52,19 +50,18 @@
 			minZoom:4
 		})
 	});
-
 	var featureOverlay = new ol.layer.Vector({
-	  source: new ol.source.Vector(),
-	  map: map,
-	  style: new ol.style.Style({
-		stroke: new ol.style.Stroke({
-		  color: '#f00',
-		  width: 1
-		}),
-		fill: new ol.style.Fill({
-		  color: 'rgba(255,0,0,0.1)'
+		source: new ol.source.Vector(),
+		map: map,
+		style: new ol.style.Style({
+			stroke: new ol.style.Stroke({
+			  color: '#f00',
+			  width: 1
+			}),
+			fill: new ol.style.Fill({
+			  color: 'rgba(255,0,0,0.1)'
+			})
 		})
-	  })
 	});
 
 	var highlight;
@@ -96,15 +93,14 @@
 
 	};
 	map.on('pointermove', function(evt) {
-	  if (evt.dragging) {
-		return;
-	  }
-	  var pixel = map.getEventPixel(evt.originalEvent);
-	  displayFeatureInfo(pixel);
+		if (evt.dragging) {
+			return;
+		}
+		var pixel = map.getEventPixel(evt.originalEvent);
+		displayFeatureInfo(pixel);
 	});
-
 	map.on('click', function(evt) {
-	  displayFeatureInfo(evt.pixel);
+		displayFeatureInfo(evt.pixel);
 	});
 
 	//------------------------------------点选部分结束-----------------------------------
@@ -127,7 +123,7 @@
 		map.addLayer(lineLayer);
 		lineDraw = new ol.interaction.Draw({
 			type: 'Polygon',
-			source: lineLayer.getSource(),    // 注意设置source，这样绘制好的线，就会添加到这个source里
+			source: lineLayer.getSource(),    // 注意设置source,存储绘制好的线
 			style: new ol.style.Style({            // 设置绘制时的样式
 				stroke: new ol.style.Stroke({
 					color: 'blue',
@@ -136,8 +132,7 @@
 				fill: new ol.style.Fill({
 				  color: 'rgba(255,0,0,0.1)'
 				})
-			}),
-			// maxPoints: 4    // 限制不超过4个点
+			})
 		});
 		
 		// 监听线绘制结束事件，获取坐标,添加样式
@@ -216,8 +211,6 @@
 		var wgs84Sphere = new ol.Sphere(6378137);
 		//创建一个当前要绘制的对象
 		var sketch = new ol.Feature();
-		//创建一个帮助提示框对象
-		// var helpTooltipElement;
 		//创建一个帮助提示信息对象
 		var helpTooltip;
 		//创建一个测量提示框对象
@@ -231,8 +224,6 @@
 				 
 		//鼠标移动触发的函数
 		var pointerMoveHandler = function (evt) {
-			//Indicates if the map is currently being dragged. 
-			//Only set for POINTERDRAG and POINTERMOVE events. Default is false.
 			//如果是平移地图则直接结束
 			if (evt.dragging) {
 				return;
@@ -241,12 +232,9 @@
 			helpMsg = '点击画测量线';
 				 
 			if (sketch) {
-				//Get the feature's default geometry. 
-				//A feature may have any number of named geometries.
 				//获取绘图对象的几何要素
 				var geom = sketch.getGeometry();
 				//如果当前绘制的几何要素是多边形，则将绘制提示信息设置为多边形绘制提示信息
-				//如果当前绘制的几何要素是多线段，则将绘制提示信息设置为多线段绘制提示信息
 				if (geom instanceof ol.geom.Polygon) {
 					helpMsg = continuePolygonMsg;
 				} else if (geom instanceof ol.geom.LineString) {
@@ -256,7 +244,6 @@
 			//设置帮助提示要素的内标签为帮助提示信息
 			helpTooltipElement.innerHTML = helpMsg;
 			//设置帮助提示信息的位置
-			//The coordinate in view projection corresponding to the original browser event.
 			helpTooltip.setPosition(evt.coordinate);
 			//移除帮助提示要素的隐藏样式
 			$(helpTooltipElement).removeClass('hidden');
@@ -322,15 +309,12 @@
 			var count = 0;
 			//绘制开始事件
 			draw.on('drawstart', function (evt) {
-				//The feature being drawn.
 				sketch = evt.feature;
 				//提示框的坐标
 				var tooltipCoord = evt.coordinate;
 				//监听几何要素的change事件
-				//Increases the revision counter and dispatches a 'change' event.
 				 
 				listener = sketch.getGeometry().on('change', function (evt) {
-					//The event target.
 					//获取绘制的几何对象
 					var geom = evt.target;
 					//定义一个输出对象，用于记录面积和长度
@@ -340,13 +324,11 @@
 						map.removeEventListener('dblclick');
 						//输出多边形的面积
 						output = formatArea(geom);
-						//Return an interior point of the polygon.
 						//获取多变形内部点的坐标
 						tooltipCoord = geom.getInteriorPoint().getCoordinates();
 					} else if (geom instanceof ol.geom.LineString) {
 						//输出多线段的长度
 						output = formatLength(geom);
-						//Return the last coordinate of the geometry.
 						//获取多线段的最后一个点的坐标
 						tooltipCoord = geom.getLastCoordinate();
 					}
@@ -389,7 +371,6 @@
 				count = 0;
 				//设置测量提示框的样式
 				measureTooltipElement.className = 'tooltip tooltip-static';
-				//Set the offset for this overlay.
 				//设置偏移量
 				measureTooltip.setOffset([0, -7]);
 				//清空绘制要素
@@ -398,7 +379,6 @@
 				measureTooltipElement = null;
 				//创建测量提示框
 				createMeasureTooltip();
-				//Removes an event listener using the key returned by on() or once().
 				//移除事件监听
 				ol.Observable.unByKey(listener);
 				//移除地图单击事件
@@ -454,7 +434,6 @@
 			var length;
 			//如果大地测量复选框被勾选，则计算球面距离
 			if (geodesicCheckbox.checked) {
-				//Return the coordinates of the linestring.
 				//获取坐标串
 				var coordinates = line.getCoordinates();
 				//初始长度为0
@@ -468,11 +447,9 @@
 					//第二个点
 					var c2 = ol.proj.transform(coordinates[i + 1], sourceProj, 'EPSG:4326');
 					//获取转换后的球面距离
-					//Returns the distance from c1 to c2 using the haversine formula.
 					length += wgs84Sphere.haversineDistance(c1,c2);
 				}
 			} else {
-				//Return the length of the linestring on projected plane.
 				//计算平面距离
 				length = Math.round(line.getLength() * 100) / 100;
 			}
@@ -495,18 +472,10 @@
 			if (geodesicCheckbox.checked) {
 				//获取初始坐标系
 				var sourceProj = map.getView().getProjection();
-				//Make a complete copy of the geometry.
-				//Transform each coordinate of the geometry from one coordinate reference system to another. 
-				//The geometry is modified in place. For example, a line will be transformed to a line and a circle to a circle.
-				//If you do not want the geometry modified in place, first clone() it and then use this function on the clone.
 				//克隆该几何对象然后转换坐标系
 				var geom = polygon.clone().transform(sourceProj, 'EPSG:4326');
-				//Return the Nth linear ring of the polygon geometry. 
-				//Return null if the given index is out of range. 
-				//The exterior linear ring is available at index 0 and the interior rings at index 1 and beyond.
 				//获取多边形的坐标系
 				var coordinates = geom.getLinearRing(0).getCoordinates();
-				//Returns the geodesic area for a list of coordinates.
 				//获取球面面积
 				area = Math.abs(wgs84Sphere.geodesicArea(coordinates));
 			} else {
@@ -716,7 +685,7 @@
 				distance: 80,   // 聚类阈值，当两点间距离小于20，便聚类为一个点
 				source: new ol.source.Vector({
 					format: new ol.format.GeoJSON(),
-					url: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'
+					url: './all_month.geojson'
 				})
 			}),
 			style: styleFunction
