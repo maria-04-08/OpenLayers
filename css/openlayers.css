@@ -1,0 +1,173 @@
+body,html{
+	height:100%;
+	width:100%;
+	overflow:hidden;
+}
+.map {
+width: 100%;
+height:100%;
+}
+#info{
+  position:fixed;
+  top:60px;
+  left:50%;
+  transform: translateX(-50%);
+  padding:4px 24px;
+  background:#fff;
+  color:#333;
+  border:1px solid #7B98BC;
+  font-weight:bold;
+}
+.toolbar{
+	position:fixed;
+	top:60px;
+	left:2%;
+	width:550px;
+	height:80px;
+	border-radius:8px;
+	display: flex;
+	justify-content: center;
+	align-items:center;
+	background:rgba(0,0,0,0.2);
+	padding:0px 20px;
+	box-sizing:border-box;
+	
+}
+.toolbar span{
+	display: block;
+	width:30%;
+	height:40px;
+	text-align: center;
+	line-height:40px;
+	border-radius:4px;
+	font-size:15px;
+	background:rgba(255,255,255,0.5);
+	margin-right:18px;
+}
+.toolbar span:hover{
+	background:#fff;
+	cursor: pointer;
+}
+.toolbar span.span-active{
+	background:#fff;
+}
+#map {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+	 
+#menu {
+	float: left;
+	position: absolute;
+	bottom: 50px;
+	right: 30px;
+	z-index: 2000;
+	display: none;
+}
+	 
+.checkbox {
+	left: 20px;
+}
+	 
+/**
+* 提示框的样式信息
+*/
+.tooltip {
+	position: relative;
+	background: rgba(0, 0, 0, 0.5);
+	border-radius: 4px;
+	color: white;
+	padding: 4px 8px;
+	opacity: 0.7;
+	white-space: nowrap;
+}
+	 
+.tooltip-measure {
+	opacity: 1;
+	font-weight: bold;
+}
+	 
+.tooltip-static {
+	background-color: #ffffff;
+	color: black;
+	border: 1px solid white;
+}
+	 
+.tooltip-measure:before,
+.tooltip-static:before {
+	border-top: 6px solid rgba(0, 0, 0, 0.5);
+	border-right: 6px solid transparent;
+	border-left: 6px solid transparent;
+	content: "";
+	position: absolute;
+	bottom: -6px;
+	margin-left: -7px;
+	left: 50%;
+}
+	 
+.tooltip-static:before {
+	border-top-color: #ffffff;
+}
+	 
+#scalebar {
+	float: left;
+	margin-bottom: 10px;
+}
+
+.map {
+  height: 100%;
+}
+.ol-popup {
+  position: absolute;
+  background-color: white;
+  -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+  bottom: 12px;
+  left: -50px;
+  min-width: 280px;
+}
+.ol-popup:after, .ol-popup:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.ol-popup:after {
+  border-top-color: white;
+  border-width: 10px;
+  left: 48px;
+  margin-left: -10px;
+}
+.ol-popup:before {
+  border-top-color: #cccccc;
+  border-width: 11px;
+  left: 48px;
+  margin-left: -11px;
+}
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
+.ol-popup-closer:after {
+  content: "✖";
+}
+#wangluo{
+	width:100%;
+	height:100%;
+	position:fixed;
+	left:0px;
+	top:0px;
+}
+#wangluo span{
+	display: inline-block;
+	width:8%;
+}
